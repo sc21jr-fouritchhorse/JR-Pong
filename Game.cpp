@@ -2,6 +2,15 @@
 
 Game::Game() = default;
 
+void Game::SetPositionsInitial()
+{
+    paddle1.position = vec2(0.0f, this->win_h / 2.0f);
+    paddle2.position = vec2(this->win_w, this->win_h / 2.0f);
+    ball.position = vec2(win_w / 2.0f , win_h / 2.0f);
+    ball.velocity.x = cos(maxBallSpeed) * (float) (-1 + (rand() % 1));
+    ball.velocity.y = sin(maxBallSpeed) * (float) (-1 + (rand() % 1));
+}
+
 void Game::Init(float w, float h) 
 {
     glfwInit();
@@ -16,14 +25,18 @@ void Game::Init(float w, float h)
     
     glfwMakeContextCurrent(game_window);
 
-    paddle1 = pong_entity(vec2(0.0f, this->win_h / 2.0f));
-    paddle2 = pong_entity(vec2(this->win_w, this->win_h / 2.0f));
+    paddle1 = pong_entity(vec2());
+    paddle2 = pong_entity(vec2());
+    paddle1.scale.y == paddle2.scale.y == paddleHeight;
+    ball = pong_entity(vec2());
 
-    ball = pong_entity(vec2(win_w / 2.0f , win_h / 2.0f));
+    SetPositionsInitial();
 
     entities.push_back(&ball);
     entities.push_back(&paddle1);
     entities.push_back(&paddle2);
+
+    score = 0;
 
     frameNo = 0;
     isRunning = true;
@@ -32,23 +45,23 @@ void Game::Init(float w, float h)
 void Game::Run()
 {
     while (isRunning)
-    {
+    {   
         GetInput();
         Update();
         Draw();
+
         glfwPollEvents();
     }
 }
 
 void Game::GetInput() 
 {
-    if(glfwGetKey(game_window, GLFW_KEY_Q))
+    if(glfwGetKey(game_window, GLFW_KEY_Q) || 
+    glfwGetKey(game_window, GLFW_KEY_ESCAPE))
         isRunning = false;
     if(glfwGetKey(game_window, GLFW_KEY_R))
     {
-        paddle1.position = vec2(0.0f, this->win_h / 2.0f);
-        paddle2.position = vec2(this->win_w, this->win_h / 2.0f);
-        ball.position = vec2(win_w / 2.0f , win_h / 2.0f);
+        SetPositionsInitial();
     }
     
     if(glfwGetKey(game_window, GLFW_KEY_W) && paddle1.position.y > 0)
@@ -79,17 +92,47 @@ void Game::GetInput()
 }
 
 void Game::Update() 
-{
-    for (Entity *e : entities)
-    {
-        e->Update();
+{ 
+ 
+    paddle1.Update();
+    paddle2.Update();
+    
+    if(ball.position.y > win_h || ball.position.y < 0.0f)
+        ball.velocity.y *= -1.0f;
+    
+    if (ball.position.x > win_w) {
+        score += 1;
+        SetPositionsInitial();
+    } 
+    if (ball.position.x < 0.0f) {
+       score -= 1;
+       SetPositionsInitial();
     }
+
+    
+    if(ball.position.x == paddle1.position.x && 
+    ball.position.y < (paddle1.position.y + paddle1.scale.y / 2.0f)
+    && ball.position.y > (paddle1.position.y - paddle1.scale.y / 2.0f))
+    {
+        ball.velocity.x *= -1;
+    }
+
+    if(ball.position.x == paddle2.position.x && 
+    ball.position.y < (paddle2.position.y + paddle2.scale.y / 2.0f)
+    && ball.position.y > (paddle2.position.y - paddle2.scale.y / 2.0f))
+    {
+        ball.velocity.x *= -1;
+    }
+
+    ball.Update();
 }
 
 void Game::Draw() 
 {
     printf("Player 1 position: %f\t", paddle1.position.y);
-    printf("Player 2 position: %f\r", paddle2.position.y);
-    
+    printf("Player 2 position: %f\t", paddle2.position.y);
+    printf("Ball position: %f,%f\t", ball.position.x, ball.position.y);
+    printf("Score: %d\r", score);
+
     glfwSwapBuffers(game_window);
 }
