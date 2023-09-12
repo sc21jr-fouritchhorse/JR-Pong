@@ -15,6 +15,7 @@ public:
     Game();
     void Init(float width, float height);
     void Run();
+    void Shutdown();
     const float maxPaddleSpd = 5.0f;
     const float maxBallSpeed = 2.5f;
 private:

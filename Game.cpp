@@ -7,8 +7,8 @@ void Game::SetPositionsInitial()
     paddle1.position = vec2(0.0f, this->win_h / 2.0f);
     paddle2.position = vec2(this->win_w, this->win_h / 2.0f);
     ball.position = vec2(win_w / 2.0f , win_h / 2.0f);
-    ball.velocity.x = cos(maxBallSpeed) * (float) (-1 + (rand() % 1));
-    ball.velocity.y = sin(maxBallSpeed) * (float) (-1 + (rand() % 1));
+    ball.velocity.x = cos(maxBallSpeed) * (float) ((rand() % 2)? -1 : 1);
+    ball.velocity.y = sin(maxBallSpeed) * (float) ((rand() % 2)? -1 : 1);
 }
 
 void Game::Init(float w, float h) 
@@ -40,6 +40,19 @@ void Game::Init(float w, float h)
 
     frameNo = 0;
     isRunning = true;
+
+
+    printf("Welcome to PONG! Inputs are as follows\n");
+    printf("<Q> to Quit\n<R> to Reset\n");
+    printf("Player 1 moves with <W> and <S>\n");
+    printf("Player 2 moves with <I> and <K>\n");
+
+}
+
+void Game::Shutdown()
+{
+    glfwDestroyWindow(game_window);
+    printf("\n\r\n\r\n\r\n\r");   
 }
 
 void Game::Run()
@@ -49,18 +62,24 @@ void Game::Run()
         GetInput();
         Update();
         Draw();
-
         glfwPollEvents();
+    }
+    if(!isRunning)
+    {
+        Shutdown();
     }
 }
 
 void Game::GetInput() 
 {
     if(glfwGetKey(game_window, GLFW_KEY_Q) || 
-    glfwGetKey(game_window, GLFW_KEY_ESCAPE))
+    glfwGetKey(game_window, GLFW_KEY_ESCAPE)) 
+    {
         isRunning = false;
+    }
     if(glfwGetKey(game_window, GLFW_KEY_R))
     {
+        score = 0;
         SetPositionsInitial();
     }
     
@@ -100,11 +119,12 @@ void Game::Update()
     if(ball.position.y > win_h || ball.position.y < 0.0f)
         ball.velocity.y *= -1.0f;
     
-    if (ball.position.x > win_w) {
+
+    if (ball.position.x >= win_w) {
         score += 1;
         SetPositionsInitial();
     } 
-    if (ball.position.x < 0.0f) {
+    if (ball.position.x <= 0.0f) {
        score -= 1;
        SetPositionsInitial();
     }
@@ -129,10 +149,11 @@ void Game::Update()
 
 void Game::Draw() 
 {
-    printf("Player 1 position: %f\t", paddle1.position.y);
-    printf("Player 2 position: %f\t", paddle2.position.y);
-    printf("Ball position: %f,%f\t", ball.position.x, ball.position.y);
-    printf("Score: %d\r", score);
+    printf("Player 1 position: %f\n", paddle1.position.y);
+    printf("Player 2 position: %f\n", paddle2.position.y);
+    printf("Ball position: %f,%f\n", ball.position.x, ball.position.y);
+    printf("Score: %d\n", score);
+    printf("\033[A\r\033[A\r\033[A\r\033[A\r");
 
     glfwSwapBuffers(game_window);
 }

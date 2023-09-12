@@ -17,8 +17,8 @@ typedef struct vec2 {
 } Vec2;
 
 typedef struct pong_entity {
-    //const char *filename;
-    //std::vector<Vec2> verts;
+    const char *filename;
+    std::vector<Vec2> verts;
     Vec2 scale;
     Vec2 position;
     Vec2 velocity;
@@ -39,7 +39,7 @@ typedef struct pong_entity {
         position.x += velocity.x;
         position.y += velocity.y;
     }
-    //pong_entity(const char* fn);
+    void ReadModelFile(const char* objFilename);
 } Entity;
 
 
